@@ -10,141 +10,148 @@ skinparam sequence {
   FontColor #2C3E50
 }
 
-title Diagrama de Secuencia - Proceso de Venta de Boletos
+title Diagrama de Secuencia - Proceso de Venta de Boletos (Arquitectura MVC)
 
 actor "Vendedor" as V
-participant "Sistema\nVentas" as SV
-participant "Gestión\nPelículas" as GP
-participant "Gestión\nHorarios" as GH
-participant "Gestión\nAsientos" as GA
-participant "Gestión\nPagos" as GPag
+participant "Vista:\nInterfaz\nVentas" as Vista
+participant "Controlador:\nVentas" as Ctrl
 database "Base de\nDatos" as BD
 
 == Selección de Película ==
-V -> SV: Iniciar venta
-activate SV
-SV -> GP: Solicitar películas disponibles
-activate GP
-GP -> BD: Consultar películas en cartelera
+V -> Vista: Iniciar venta
+activate Vista
+Vista -> Ctrl: Solicitar catálogo de películas
+activate Ctrl
+Ctrl -> BD: Obtener todas las películas en cartelera
 activate BD
-BD --> GP: Lista de películas
+BD --> Ctrl: Lista de películas disponibles
 deactivate BD
-GP --> SV: Películas disponibles
-deactivate GP
-SV --> V: Mostrar catálogo
-V -> SV: Seleccionar película
-SV -> GP: Obtener detalles de película
-activate GP
-GP --> SV: Detalles confirmados
-deactivate GP
+Ctrl --> Vista: Películas formateadas
+deactivate Ctrl
+Vista --> V: Mostrar catálogo
+
+V -> Vista: Seleccionar película
+Vista -> Ctrl: Obtener detalles (id_película)
+activate Ctrl
+Ctrl -> BD: Buscar película por ID y obtener información completa
+activate BD
+BD --> Ctrl: Detalles de la película
+deactivate BD
+Ctrl --> Vista: Detalles confirmados
+deactivate Ctrl
+Vista --> V: Mostrar detalles
 
 == Selección de Horario ==
-SV -> GH: Solicitar horarios para película
-activate GH
-GH -> BD: Consultar horarios disponibles
+Vista -> Ctrl: Solicitar horarios (id_película)
+activate Ctrl
+Ctrl -> BD: Obtener horarios para la película desde hoy en adelante
 activate BD
-BD --> GH: Lista de horarios
+BD --> Ctrl: Horarios disponibles
 deactivate BD
-GH --> SV: Horarios disponibles
-deactivate GH
-SV --> V: Mostrar horarios
-V -> SV: Seleccionar horario
-SV -> GH: Verificar disponibilidad
-activate GH
-GH -> BD: Consultar capacidad
+Ctrl --> Vista: Horarios formateados
+deactivate Ctrl
+Vista --> V: Mostrar horarios disponibles
+
+V -> Vista: Seleccionar horario
+Vista -> Ctrl: Verificar capacidad (id_horario)
+activate Ctrl
+Ctrl -> BD: Contar asientos disponibles para el horario
 activate BD
-BD --> GH: Capacidad disponible
+BD --> Ctrl: Cantidad de asientos libres
 deactivate BD
-GH --> SV: Horario confirmado
-deactivate GH
+Ctrl --> Vista: Horario confirmado
+deactivate Ctrl
+Vista --> V: Mostrar confirmación
 
 == Selección de Asiento ==
-SV -> GA: Solicitar mapa de asientos
-activate GA
-GA -> BD: Consultar estado de asientos
+Vista -> Ctrl: Solicitar mapa de asientos (id_horario)
+activate Ctrl
+Ctrl -> BD: Obtener estado de todos los asientos del horario
 activate BD
-BD --> GA: Estado de asientos
+BD --> Ctrl: Mapa completo de asientos
 deactivate BD
-GA --> SV: Mapa de asientos
-deactivate GA
-SV --> V: Mostrar mapa
-V -> SV: Seleccionar asiento
-SV -> GA: Reservar asiento temporalmente
-activate GA
-GA -> BD: Bloquear asiento
+Ctrl --> Vista: Mapa estructurado
+deactivate Ctrl
+Vista --> V: Mostrar mapa visual
+
+V -> Vista: Seleccionar asiento (fila, columna)
+Vista -> Ctrl: Reservar asiento temporalmente
+activate Ctrl
+Ctrl -> BD: Bloquear asiento seleccionado
 activate BD
-BD --> GA: Asiento bloqueado
+BD --> Ctrl: Asiento bloqueado exitosamente
 deactivate BD
-GA --> SV: Reserva temporal confirmada
-deactivate GA
+Ctrl --> Vista: Confirmación de reserva
+deactivate Ctrl
+Vista --> V: Mostrar asiento reservado
 
 == Proceso de Pago ==
-V -> SV: Ingresar datos del cliente
-SV -> GPag: Registrar datos del cliente
-activate GPag
-GPag -> BD: Guardar información
+V -> Vista: Ingresar datos del cliente
+Vista -> Ctrl: Registrar datos cliente
+activate Ctrl
+Ctrl -> BD: Guardar nuevo cliente con nombre, email y teléfono
 activate BD
-BD --> GPag: Datos guardados
+BD --> Ctrl: Cliente registrado con ID
 deactivate BD
-deactivate GPag
+Ctrl --> Vista: Cliente registrado
+deactivate Ctrl
+Vista --> V: Confirmación registro
 
-V -> SV: Seleccionar método de pago
-SV -> GPag: Calcular total
-activate GPag
+V -> Vista: Seleccionar método de pago
+Vista -> Ctrl: Calcular total (id_horario, id_asiento)
+activate Ctrl
+Ctrl -> BD: Obtener precio del horario
+activate BD
+BD --> Ctrl: Precio base del boleto
+deactivate BD
 
 alt Aplica descuento
-    V -> SV: Aplicar descuento
-    SV -> GPag: Aplicar promoción
-    GPag -> BD: Validar descuento
+    V -> Vista: Aplicar descuento (código)
+    Vista -> Ctrl: Validar descuento
+    Ctrl -> BD: Buscar descuento por código y verificar si está activo
     activate BD
-    BD --> GPag: Descuento validado
+    BD --> Ctrl: Porcentaje de descuento
     deactivate BD
+    Ctrl -> Ctrl: Aplicar descuento al precio
 end
 
-GPag --> SV: Total calculado
-deactivate GPag
-SV --> V: Mostrar total
+Ctrl --> Vista: Monto final
+deactivate Ctrl
+Vista --> V: Mostrar resumen y total
 
-V -> SV: Confirmar pago
-SV -> GPag: Procesar pago
-activate GPag
-GPag -> BD: Registrar transacción
+V -> Vista: Confirmar pago
+Vista -> Ctrl: Procesar transacción
+activate Ctrl
+Ctrl -> BD: Registrar venta con cliente, asiento, monto y método de pago
 activate BD
-BD --> GPag: Transacción registrada
+BD --> Ctrl: Venta registrada con ID
 deactivate BD
 
 alt Pago exitoso
-    GPag --> SV: Pago confirmado
-    SV -> GA: Confirmar asiento definitivamente
-    activate GA
-    GA -> BD: Actualizar estado asiento
+    Ctrl -> BD: Marcar asiento como ocupado y asociar a la venta
     activate BD
-    BD --> GA: Asiento confirmado
+    BD --> Ctrl: Asiento confirmado
     deactivate BD
-    deactivate GA
     
-    SV -> GPag: Generar boleto
-    GPag -> BD: Guardar registro de boleto
+    Ctrl -> BD: Crear boleto con código QR y fecha de emisión
     activate BD
-    BD --> GPag: Boleto registrado
+    BD --> Ctrl: Boleto generado
     deactivate BD
-    GPag --> SV: Boleto generado
-    deactivate GPag
-    SV --> V: Imprimir boleto
+    Ctrl --> Vista: Boleto listo para imprimir
+    deactivate Ctrl
+    Vista --> V: Imprimir boleto
     V -> V: Entregar boleto al cliente
+    
 else Pago fallido
-    GPag --> SV: Error en pago
-    deactivate GPag
-    SV -> GA: Liberar asiento
-    activate GA
-    GA -> BD: Desbloquear asiento
+    Ctrl -> BD: Liberar asiento y marcar como disponible
     activate BD
-    BD --> GA: Asiento liberado
+    BD --> Ctrl: Asiento disponible nuevamente
     deactivate BD
-    deactivate GA
-    SV --> V: Mostrar error
+    Ctrl --> Vista: Mensaje de error en pago
+    deactivate Ctrl
+    Vista --> V: Mostrar error y permitir reintentar
 end
 
-deactivate SV
+deactivate Vista
 
 @enduml
