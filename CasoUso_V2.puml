@@ -1,15 +1,21 @@
 @startuml papa
-top to bottom direction
-skinparam monochrome true
+left to right direction
 skinparam shadowing false
 skinparam usecase {
-  BackgroundColor White
-  BorderColor Black
-  ArrowColor Black
+  BackgroundColor #E8F4F8
+  BorderColor #4A90A4
+  ArrowColor #2C5F75
+  FontColor #2C3E50
 }
 skinparam actor {
-  BackgroundColor White
-  BorderColor Black
+  BackgroundColor #FFE5D9
+  BorderColor #D68C45
+  FontColor #2C3E50
+}
+skinparam rectangle {
+  BackgroundColor #F9F9F9
+  BorderColor #95A5A6
+  FontColor #2C3E50
 }
 
 rectangle "Sistema de Venta de Boletos en Físico" {
@@ -26,11 +32,6 @@ rectangle "Sistema de Venta de Boletos en Físico" {
     UC01 ..> UC02 : <<include>>
     UC02 ..> UC03 : <<include>>
     UC03 ..> UC04 : <<include>>
-
-    note bottom of UC01 : Paso 1: Selección de película
-    note bottom of UC02 : Paso 2: Selección de horario
-    note bottom of UC03 : Paso 3: Selección de asiento
-    note bottom of UC04 : Paso 4: Pago y emisión
   }
   actor "Vendedor" as V1
   rectangle "          Nivel 1: Detalles de Seleccionar Película" {
@@ -48,10 +49,6 @@ rectangle "Sistema de Venta de Boletos en Físico" {
     UC1 ..> SUB12 : <<extend>>
     SUB11 ..> SUB13 : <<extend>>
     SUB12 ..> SUB13 : <<extend>>
-    
-    note bottom of SUB11 : Siempre se lista para elegir
-    note bottom of SUB12 : Opcional para búsqueda
-    note bottom of SUB13 : Opcional para ver sinopsis, duración, etc.
   }
   actor "Vendedor" as V2
   rectangle "                    Nivel 1: Detalles de Seleccionar Horario" {
@@ -70,10 +67,6 @@ rectangle "Sistema de Venta de Boletos en Físico" {
     SUB22 ..> SUB23 : <<extend>>
     UC2 ..> SUB22 : <<extend>>
     UC2 ..> SUB23 : <<extend>>
-    
-    note bottom of SUB21 : Siempre se muestran para la película seleccionada
-    note bottom of SUB22 : Opcional según preferencias del cliente
-    note bottom of SUB23 : Opcional para verificar disponibilidad
   }
   actor "Vendedor" as V3
   rectangle "                    Nivel 1: Detalles de Seleccionar Asiento" {
@@ -89,14 +82,10 @@ rectangle "Sistema de Venta de Boletos en Físico" {
     UC3 ..> SUB31 : <<include>>
     SUB31 ..> SUB32 : <<include>>
     SUB32 ..> SUB33 : <<extend>>
-    
-    note bottom of SUB31 : Siempre se muestra el mapa
-    note bottom of SUB32 : Siempre se reserva para evitar conflictos
-    note bottom of SUB33 : Opcional si cambia de opinión
   }
   actor "Vendedor" as V4
   rectangle "                    Nivel 1: Detalles de Realizar Pago" {
-    
+    top to bottom direction
     
     usecase "Realizar Pago" as UC4
     usecase "Ingresar Datos del Cliente" as SUB41
@@ -113,12 +102,6 @@ rectangle "Sistema de Venta de Boletos en Físico" {
     SUB42 ..> SUB44 : <<include>>
     SUB43 ..> SUB44 : <<include>>
     SUB44 ..> SUB45 : <<include>>
-    
-    note bottom of SUB41 : Siempre se ingresa los datos del cliente
-    note bottom of SUB42 : Siempre se elige método (efectivo, tarjeta, etc.)
-    note bottom of SUB43 : Opcional si aplica promoción
-    note bottom of SUB44 : Siempre se calcula el total a pagar
-    note bottom of SUB45 : Siempre se imprime al final
   }
 
 }
