@@ -1,0 +1,171 @@
+@startuml DiagramaComponentes_MVC
+skinparam shadowing false
+skinparam component {
+  BackgroundColor #E8F4F8
+  BorderColor #4A90A4
+  ArrowColor #2C5F75
+  FontColor #2C3E50
+}
+skinparam database {
+  BackgroundColor #D4E6F1
+  BorderColor #2E86AB
+  FontColor #2C3E50
+}
+skinparam actor {
+  BackgroundColor #FFE5D9
+  BorderColor #D68C45
+  FontColor #2C3E50
+}
+skinparam package {
+  BackgroundColor #F9F9F9
+  BorderColor #95A5A6
+  FontColor #2C3E50
+}
+
+title Arquitectura MVC - Sistema de Venta de Boletos
+
+actor "Vendedor" as Vendedor
+
+package "CAPA VISTA (View)" #FFF9E6 {
+  component "Interfaz de\nVentas" as InterfazVentas {
+    [Pantalla Selección Película]
+    [Pantalla Selección Horario]
+    [Pantalla Selección Asiento]
+    [Pantalla Proceso Pago]
+    [Pantalla Impresión Boleto]
+  }
+}
+
+package "CAPA CONTROLADOR (Controller)" #FFE5D9 {
+  component "Controlador\nPelículas" as CtrlPeliculas {
+    portin " " as CP_in
+    portout " " as CP_out
+  }
+  
+  component "Controlador\nHorarios" as CtrlHorarios {
+    portin " " as CH_in
+    portout " " as CH_out
+  }
+  
+  component "Controlador\nAsientos" as CtrlAsientos {
+    portin " " as CA_in
+    portout " " as CA_out
+  }
+  
+  component "Controlador\nPagos" as CtrlPagos {
+    portin " " as CPg_in
+    portout " " as CPg_out
+  }
+  
+  component "Controlador\nVentas" as CtrlVentas {
+    portin " " as CV_in
+    portout " " as CV_out
+  }
+}
+
+package "CAPA MODELO (Model)" #E8F4F8 {
+  component "Gestión\nPelículas" as GestionPeliculas {
+    + listarPeliculas()
+    + buscarPelicula()
+    + obtenerDetalles()
+  }
+  
+  component "Gestión\nHorarios" as GestionHorarios {
+    + obtenerHorarios()
+    + filtrarHorarios()
+    + verificarCapacidad()
+  }
+  
+  component "Gestión\nAsientos" as GestionAsientos {
+    + obtenerMapaAsientos()
+    + reservarAsiento()
+    + liberarAsiento()
+    + confirmarAsiento()
+  }
+  
+  component "Gestión\nPagos" as GestionPagos {
+    + registrarCliente()
+    + aplicarDescuento()
+    + calcularTotal()
+    + procesarPago()
+  }
+  
+  component "Gestión\nVentas" as GestionVentas {
+    + registrarVenta()
+    + generarBoleto()
+    + imprimirBoleto()
+  }
+}
+
+database "Base de Datos" as BD {
+  frame "Tablas" {
+    [Películas]
+    [Horarios]
+    [Asientos]
+    [Clientes]
+    [Ventas]
+    [Boletos]
+  }
+}
+
+' Relaciones Vista - Controlador
+Vendedor --> InterfazVentas : Interactúa
+
+[Pantalla Selección Película] --> CP_in : Solicita películas\nBusca/Filtra
+[Pantalla Selección Horario] --> CH_in : Solicita horarios\nFiltra por rango
+[Pantalla Selección Asiento] --> CA_in : Solicita mapa\nSelecciona asiento
+[Pantalla Proceso Pago] --> CPg_in : Ingresa datos\nProcesa pago
+[Pantalla Impresión Boleto] --> CV_in : Solicita boleto
+
+CP_out --> [Pantalla Selección Película] : Muestra catálogo\nMuestra detalles
+CH_out --> [Pantalla Selección Horario] : Muestra horarios\nMuestra capacidad
+CA_out --> [Pantalla Selección Asiento] : Muestra mapa\nConfirma reserva
+CPg_out --> [Pantalla Proceso Pago] : Muestra total\nConfirma pago
+CV_out --> [Pantalla Impresión Boleto] : Entrega boleto
+
+' Relaciones Controlador - Modelo
+CtrlPeliculas --> GestionPeliculas : Gestiona peticiones
+CtrlHorarios --> GestionHorarios : Gestiona peticiones
+CtrlAsientos --> GestionAsientos : Gestiona peticiones
+CtrlPagos --> GestionPagos : Gestiona peticiones
+CtrlVentas --> GestionVentas : Gestiona peticiones
+
+' Relaciones Modelo - Base de Datos
+GestionPeliculas --> [Películas] : CRUD
+GestionHorarios --> [Horarios] : CRUD
+GestionAsientos --> [Asientos] : CRUD\nBloquea/Libera
+GestionPagos --> [Clientes] : CRUD
+GestionVentas --> [Ventas] : INSERT
+GestionVentas --> [Boletos] : INSERT
+
+note right of InterfazVentas
+  **VISTA**
+  - Presenta información al vendedor
+  - Captura entrada del usuario
+  - No contiene lógica de negocio
+end note
+
+note right of CtrlPeliculas
+  **CONTROLADOR**
+  - Recibe solicitudes de la Vista
+  - Coordina operaciones del Modelo
+  - Actualiza la Vista con respuestas
+  - Valida entradas del usuario
+end note
+
+note right of GestionPeliculas
+  **MODELO**
+  - Contiene lógica de negocio
+  - Gestiona datos y reglas
+  - Accede a la Base de Datos
+  - Independiente de la interfaz
+end note
+
+note bottom of BD
+  **BASE DE DATOS**
+  - Almacenamiento persistente
+  - Gestiona transacciones
+  - Mantiene integridad de datos
+end note
+
+@enduml

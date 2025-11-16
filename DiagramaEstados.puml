@@ -1,0 +1,118 @@
+@startuml DiagramaEstados
+skinparam shadowing false
+skinparam state {
+  BackgroundColor #E8F4F8
+  BorderColor #4A90A4
+  ArrowColor #2C5F75
+  FontColor #2C3E50
+  StartColor #D68C45
+  EndColor #D68C45
+}
+
+title Diagrama de Estados - Proceso de Venta de Boleto
+
+[*] --> Inicio
+
+Inicio: Sistema en espera
+Inicio: Sin transacción activa
+
+Inicio --> SeleccionandoPelicula : Vendedor inicia venta
+
+state SeleccionandoPelicula {
+  [*] --> MostrandoCatalogo
+  MostrandoCatalogo --> BuscandoPelicula : Buscar por nombre/género
+  MostrandoCatalogo --> ViendoDetalles : Ver detalles
+  BuscandoPelicula --> ViendoDetalles : Ver detalles
+  ViendoDetalles --> [*] : Película seleccionada
+  MostrandoCatalogo --> [*] : Película seleccionada
+  BuscandoPelicula --> [*] : Película seleccionada
+}
+
+SeleccionandoPelicula --> SeleccionandoHorario : Película confirmada
+
+state SeleccionandoHorario {
+  [*] --> MostrandoHorarios
+  MostrandoHorarios --> FiltrandoHorarios : Filtrar por rango
+  MostrandoHorarios --> ViendoCapacidad : Ver disponibilidad
+  FiltrandoHorarios --> ViendoCapacidad : Ver disponibilidad
+  ViendoCapacidad --> [*] : Horario seleccionado
+  MostrandoHorarios --> [*] : Horario seleccionado
+  FiltrandoHorarios --> [*] : Horario seleccionado
+}
+
+SeleccionandoHorario --> SeleccionandoAsiento : Horario confirmado
+
+state SeleccionandoAsiento {
+  [*] --> MostrandoMapaAsientos
+  MostrandoMapaAsientos --> AsientoReservadoTemp : Asiento seleccionado
+  AsientoReservadoTemp --> MostrandoMapaAsientos : Cambiar selección
+  AsientoReservadoTemp --> [*] : Confirmar asiento
+}
+
+SeleccionandoAsiento --> ProcesandoPago : Asiento confirmado
+
+state ProcesandoPago {
+  [*] --> IngresandoDatosCliente
+  IngresandoDatosCliente --> SeleccionandoMetodoPago : Datos ingresados
+  SeleccionandoMetodoPago --> AplicandoDescuento : Hay descuento
+  SeleccionandoMetodoPago --> CalculandoTotal : Sin descuento
+  AplicandoDescuento --> CalculandoTotal : Descuento aplicado
+  CalculandoTotal --> EsperandoConfirmacion : Total calculado
+  
+  state EsperandoConfirmacion {
+    [*] --> MostrandoResumen
+    MostrandoResumen --> [*] : Cliente confirma
+  }
+  
+  EsperandoConfirmacion --> ValidandoPago : Procesar pago
+}
+
+ProcesandoPago --> PagoExitoso : Pago aprobado
+ProcesandoPago --> PagoFallido : Pago rechazado
+ProcesandoPago --> VentaCancelada : Cliente cancela
+
+state PagoExitoso {
+  [*] --> RegistrandoVenta
+  RegistrandoVenta --> ConfirmandoAsiento : Venta registrada
+  ConfirmandoAsiento --> GenerandoBoleto : Asiento confirmado
+  GenerandoBoleto --> ImprimiendoBoleto : Boleto generado
+  ImprimiendoBoleto --> [*] : Boleto impreso
+}
+
+state PagoFallido {
+  [*] --> MostrandoError
+  MostrandoError --> LiberandoAsiento : Error mostrado
+  LiberandoAsiento --> [*] : Asiento liberado
+}
+
+state VentaCancelada {
+  [*] --> LiberandoRecursos
+  LiberandoRecursos --> [*] : Recursos liberados
+}
+
+PagoExitoso --> VentaCompletada : Boleto entregado
+PagoFallido --> VentaFallida : Transacción cancelada
+VentaCancelada --> VentaFallida : Venta cancelada
+
+VentaCompletada --> [*]
+VentaFallida --> [*]
+
+note right of SeleccionandoPelicula
+  El vendedor puede buscar,
+  filtrar o ver detalles
+  antes de seleccionar
+end note
+
+note right of SeleccionandoAsiento
+  El asiento se reserva
+  temporalmente para evitar
+  conflictos de venta
+end note
+
+note right of ProcesandoPago
+  El descuento es opcional
+  según las promociones
+  vigentes
+end note
+
+@enduml

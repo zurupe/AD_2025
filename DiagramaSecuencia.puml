@@ -1,0 +1,150 @@
+@startuml DiagramaSecuencia
+skinparam shadowing false
+skinparam sequence {
+  ArrowColor #2C5F75
+  ActorBorderColor #D68C45
+  ActorBackgroundColor #FFE5D9
+  ParticipantBorderColor #4A90A4
+  ParticipantBackgroundColor #E8F4F8
+  LifeLineBorderColor #95A5A6
+  FontColor #2C3E50
+}
+
+title Diagrama de Secuencia - Proceso de Venta de Boletos
+
+actor "Vendedor" as V
+participant "Sistema\nVentas" as SV
+participant "Gestión\nPelículas" as GP
+participant "Gestión\nHorarios" as GH
+participant "Gestión\nAsientos" as GA
+participant "Gestión\nPagos" as GPag
+database "Base de\nDatos" as BD
+
+== Selección de Película ==
+V -> SV: Iniciar venta
+activate SV
+SV -> GP: Solicitar películas disponibles
+activate GP
+GP -> BD: Consultar películas en cartelera
+activate BD
+BD --> GP: Lista de películas
+deactivate BD
+GP --> SV: Películas disponibles
+deactivate GP
+SV --> V: Mostrar catálogo
+V -> SV: Seleccionar película
+SV -> GP: Obtener detalles de película
+activate GP
+GP --> SV: Detalles confirmados
+deactivate GP
+
+== Selección de Horario ==
+SV -> GH: Solicitar horarios para película
+activate GH
+GH -> BD: Consultar horarios disponibles
+activate BD
+BD --> GH: Lista de horarios
+deactivate BD
+GH --> SV: Horarios disponibles
+deactivate GH
+SV --> V: Mostrar horarios
+V -> SV: Seleccionar horario
+SV -> GH: Verificar disponibilidad
+activate GH
+GH -> BD: Consultar capacidad
+activate BD
+BD --> GH: Capacidad disponible
+deactivate BD
+GH --> SV: Horario confirmado
+deactivate GH
+
+== Selección de Asiento ==
+SV -> GA: Solicitar mapa de asientos
+activate GA
+GA -> BD: Consultar estado de asientos
+activate BD
+BD --> GA: Estado de asientos
+deactivate BD
+GA --> SV: Mapa de asientos
+deactivate GA
+SV --> V: Mostrar mapa
+V -> SV: Seleccionar asiento
+SV -> GA: Reservar asiento temporalmente
+activate GA
+GA -> BD: Bloquear asiento
+activate BD
+BD --> GA: Asiento bloqueado
+deactivate BD
+GA --> SV: Reserva temporal confirmada
+deactivate GA
+
+== Proceso de Pago ==
+V -> SV: Ingresar datos del cliente
+SV -> GPag: Registrar datos del cliente
+activate GPag
+GPag -> BD: Guardar información
+activate BD
+BD --> GPag: Datos guardados
+deactivate BD
+deactivate GPag
+
+V -> SV: Seleccionar método de pago
+SV -> GPag: Calcular total
+activate GPag
+
+alt Aplica descuento
+    V -> SV: Aplicar descuento
+    SV -> GPag: Aplicar promoción
+    GPag -> BD: Validar descuento
+    activate BD
+    BD --> GPag: Descuento validado
+    deactivate BD
+end
+
+GPag --> SV: Total calculado
+deactivate GPag
+SV --> V: Mostrar total
+
+V -> SV: Confirmar pago
+SV -> GPag: Procesar pago
+activate GPag
+GPag -> BD: Registrar transacción
+activate BD
+BD --> GPag: Transacción registrada
+deactivate BD
+
+alt Pago exitoso
+    GPag --> SV: Pago confirmado
+    SV -> GA: Confirmar asiento definitivamente
+    activate GA
+    GA -> BD: Actualizar estado asiento
+    activate BD
+    BD --> GA: Asiento confirmado
+    deactivate BD
+    deactivate GA
+    
+    SV -> GPag: Generar boleto
+    GPag -> BD: Guardar registro de boleto
+    activate BD
+    BD --> GPag: Boleto registrado
+    deactivate BD
+    GPag --> SV: Boleto generado
+    deactivate GPag
+    SV --> V: Imprimir boleto
+    V -> V: Entregar boleto al cliente
+else Pago fallido
+    GPag --> SV: Error en pago
+    deactivate GPag
+    SV -> GA: Liberar asiento
+    activate GA
+    GA -> BD: Desbloquear asiento
+    activate BD
+    BD --> GA: Asiento liberado
+    deactivate BD
+    deactivate GA
+    SV --> V: Mostrar error
+end
+
+deactivate SV
+
+@enduml

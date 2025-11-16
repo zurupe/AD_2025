@@ -1,0 +1,105 @@
+@startuml DiagramaActividades
+skinparam shadowing false
+skinparam activity {
+  BackgroundColor #E8F4F8
+  BorderColor #4A90A4
+  ArrowColor #2C5F75
+  FontColor #2C3E50
+  DiamondBackgroundColor #FFE5D9
+  DiamondBorderColor #D68C45
+}
+skinparam note {
+  BackgroundColor #FFF9E6
+  BorderColor #E6D68A
+}
+
+title Diagrama de Actividades - Sistema de Venta de Boletos
+
+|Vendedor|
+start
+:Iniciar proceso de venta;
+
+|Sistema|
+:Mostrar catálogo de películas;
+:Listar películas disponibles;
+
+|Vendedor|
+:Seleccionar película;
+
+note right
+  Puede buscar por nombre/género
+  o ver detalles de la película
+end note
+
+|Sistema|
+:Mostrar horarios disponibles
+para la película seleccionada;
+
+|Vendedor|
+:Seleccionar horario;
+
+note right
+  Puede filtrar horarios
+  o ver capacidad restante
+end note
+
+|Sistema|
+:Mostrar mapa de asientos;
+:Reservar asiento temporalmente;
+
+|Vendedor|
+if (¿Cliente desea cambiar asiento?) then (Sí)
+  |Sistema|
+  :Liberar asiento anterior;
+  :Mostrar mapa actualizado;
+  |Vendedor|
+  :Seleccionar nuevo asiento;
+else (No)
+endif
+
+|Sistema|
+:Confirmar reserva de asiento;
+
+|Vendedor|
+:Ingresar datos del cliente;
+:Seleccionar método de pago;
+
+if (¿Aplica descuento?) then (Sí)
+  |Sistema|
+  :Aplicar descuento/promoción;
+else (No)
+endif
+
+|Sistema|
+:Calcular total a pagar;
+:Mostrar resumen de compra;
+
+|Vendedor|
+if (¿Cliente confirma compra?) then (Sí)
+  |Sistema|
+  :Procesar pago;
+  
+  if (¿Pago exitoso?) then (Sí)
+    :Registrar venta en sistema;
+    :Imprimir boleto;
+    :Entregar boleto al cliente;
+    
+    |Vendedor|
+    stop
+  else (No)
+    :Mostrar error de pago;
+    :Cancelar reserva;
+    
+    |Vendedor|
+    stop
+  endif
+else (No)
+  |Sistema|
+  :Cancelar reserva de asiento;
+  :Liberar asiento;
+  
+  |Vendedor|
+  stop
+endif
+
+@enduml
