@@ -1,0 +1,126 @@
+@startuml papa
+top to bottom direction
+skinparam monochrome true
+skinparam shadowing false
+skinparam usecase {
+  BackgroundColor White
+  BorderColor Black
+  ArrowColor Black
+}
+skinparam actor {
+  BackgroundColor White
+  BorderColor Black
+}
+
+rectangle "Sistema de Venta de Boletos en Físico" {
+
+    
+  actor "Vendedor" as V0
+  rectangle "          Nivel 0: Proceso General" {
+    usecase "Seleccionar Película" as UC01
+    usecase "Seleccionar Horario" as UC02
+    usecase "Seleccionar Asiento" as UC03
+    usecase "Realizar Pago" as UC04
+    
+    V0 --> UC01
+    UC01 ..> UC02 : <<include>>
+    UC02 ..> UC03 : <<include>>
+    UC03 ..> UC04 : <<include>>
+
+    note bottom of UC01 : Paso 1: Selección de película
+    note bottom of UC02 : Paso 2: Selección de horario
+    note bottom of UC03 : Paso 3: Selección de asiento
+    note bottom of UC04 : Paso 4: Pago y emisión
+  }
+  actor "Vendedor" as V1
+  rectangle "          Nivel 1: Detalles de Seleccionar Película" {
+    
+    
+    usecase "Seleccionar Película" as UC1
+    usecase "Listar Películas Disponibles" as SUB11
+    usecase "Buscar Película por Nombre o Género" as SUB12
+    usecase "Ver Detalles de Película" as SUB13
+    
+    V1 --> UC1
+    
+    UC1 ..> SUB11 : <<include>>
+    SUB11 ..> SUB12 : <<extend>>
+    UC1 ..> SUB12 : <<extend>>
+    SUB11 ..> SUB13 : <<extend>>
+    SUB12 ..> SUB13 : <<extend>>
+    
+    note bottom of SUB11 : Siempre se lista para elegir
+    note bottom of SUB12 : Opcional para búsqueda
+    note bottom of SUB13 : Opcional para ver sinopsis, duración, etc.
+  }
+  actor "Vendedor" as V2
+  rectangle "                    Nivel 1: Detalles de Seleccionar Horario" {
+    
+    
+    usecase "Seleccionar Horario" as UC2
+    usecase "Mostrar Horarios Disponibles" as SUB21
+    usecase "Filtrar Horarios por Rango" as SUB22
+    usecase "Ver Capacidad Restante" as SUB23
+    
+    V2 --> UC2
+    
+    UC2 ..> SUB21 : <<include>>
+    SUB21 ..> SUB22 : <<extend>>
+    SUB21 ..> SUB23 : <<extend>>
+    SUB22 ..> SUB23 : <<extend>>
+    UC2 ..> SUB22 : <<extend>>
+    UC2 ..> SUB23 : <<extend>>
+    
+    note bottom of SUB21 : Siempre se muestran para la película seleccionada
+    note bottom of SUB22 : Opcional según preferencias del cliente
+    note bottom of SUB23 : Opcional para verificar disponibilidad
+  }
+  actor "Vendedor" as V3
+  rectangle "                    Nivel 1: Detalles de Seleccionar Asiento" {
+    
+    
+    usecase "Seleccionar Asiento" as UC3
+    usecase "Mostrar Mapa de Asientos" as SUB31
+    usecase "Reservar Asiento Temporalmente" as SUB32
+    usecase "Cambiar Selección de Asiento" as SUB33
+    
+    V3 --> UC3
+    
+    UC3 ..> SUB31 : <<include>>
+    SUB31 ..> SUB32 : <<include>>
+    SUB32 ..> SUB33 : <<extend>>
+    
+    note bottom of SUB31 : Siempre se muestra el mapa
+    note bottom of SUB32 : Siempre se reserva para evitar conflictos
+    note bottom of SUB33 : Opcional si cambia de opinión
+  }
+  actor "Vendedor" as V4
+  rectangle "                    Nivel 1: Detalles de Realizar Pago" {
+    
+    
+    usecase "Realizar Pago" as UC4
+    usecase "Ingresar Datos del Cliente" as SUB41
+    usecase "Seleccionar Método de Pago" as SUB42
+    usecase "Aplicar Descuento" as SUB43
+    usecase "Calcular Total" as SUB44
+    usecase "Imprimir Boleto" as SUB45
+    
+    V4 --> UC4
+    
+    UC4 ..> SUB41 : <<include>>
+    SUB41 ..> SUB42 : <<include>>
+    SUB42 ..> SUB43 : <<extend>>
+    SUB42 ..> SUB44 : <<include>>
+    SUB43 ..> SUB44 : <<include>>
+    SUB44 ..> SUB45 : <<include>>
+    
+    note bottom of SUB41 : Siempre se ingresa los datos del cliente
+    note bottom of SUB42 : Siempre se elige método (efectivo, tarjeta, etc.)
+    note bottom of SUB43 : Opcional si aplica promoción
+    note bottom of SUB44 : Siempre se calcula el total a pagar
+    note bottom of SUB45 : Siempre se imprime al final
+  }
+
+}
+
+@enduml
